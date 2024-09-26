@@ -4,4 +4,5 @@ google.generativeai
 python-dotenv
 PyPDF2
 Pillow
-pip install google-cloud-aiplatform
+google-cloud-aiplatform
+
