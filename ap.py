@@ -38,7 +38,7 @@ def get_meal_suggestions(analysis_results):
     return response.text
 
 # Set page config
-st.set_page_config(page_title="NutriLens", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="NutrifyAI", layout="wide", initial_sidebar_state="expanded")
 
 # Custom CSS for styling with updated color scheme
 st.markdown("""
