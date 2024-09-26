@@ -133,7 +133,7 @@ st.markdown("""
 
 # Sidebar
 with st.sidebar:
-    st.image("imgs\\Green Beige Circle Healthy Food Logo.svg")
+    st.image("karthi.jpeg")
     st.title("More Options")
     st.markdown("Upload an image of your food to get nutritional insights and meal suggestions!")
     
