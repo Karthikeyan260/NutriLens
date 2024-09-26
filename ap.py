@@ -1,7 +1,7 @@
 import streamlit as st
 #import google.generativeai as genai
 from PIL import Image
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 import os
 
 # Load environment variables
