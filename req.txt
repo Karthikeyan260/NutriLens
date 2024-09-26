@@ -5,4 +5,4 @@ python-dotenv
 PyPDF2
 Pillow
 google-cloud-aiplatform
-
+python-dotenv
