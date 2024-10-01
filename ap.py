@@ -40,24 +40,24 @@ def get_meal_suggestions(analysis_results):
 # Set page config
 st.set_page_config(page_title="NutrifyAI", layout="wide", initial_sidebar_state="expanded")
 
-# Custom CSS for styling with updated color scheme
+# Custom CSS for styling with a white theme
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
         
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: #ffffff; /* Lighter Mint */
-            color: #ffffff; /* Muted Dark Green */
+            background-color: #f9f9f9; /* Light background */
+            color: #333333; /* Dark text */
         }
         .main {
-            background-color: #000000;
+            background-color: #ffffff;
             border-radius: 10px;
             padding: 2rem;
-            box-shadow: 0 4px 6px rgba(5, 79, 65, 0.1); /* Muted Green shadow */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
         }
         .stButton > button {
-            background-color: #2bbbad; /* Vibrant Teal */
+            background-color: #4CAF50; /* Green */
             color: white;
             font-weight: bold;
             border: none;
@@ -66,42 +66,42 @@ st.markdown("""
             transition: all 0.3s ease;
         }
         .stButton > button:hover {
-            background-color: #388e3c; /* Dark Emerald Green */
+            background-color: #388E3C; /* Darker green */
             transform: translateY(-2px);
         }
         .uploaded-image {
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(5, 79, 65, 0.1); /* Muted Green shadow */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Light shadow */
         }
         .response-box {
-            background-color: #f3f8f2; /* Lighter Mint */
-            border: 1px solid #78c79e; /* Soft Mint */
+            background-color: #f1f1f1; /* Light grey background */
+            border: 1px solid #dddddd; /* Subtle border */
             border-radius: 5px;
             padding: 1rem;
             margin-top: 1rem;
-            color: #000000;
+            color: #333333;
         }
         .meal-suggestion-box {
-            background-color: #f3f8f2; /* Lighter Mint */
-            border: 1px solid #27a697; /* Balanced Teal */
+            background-color: #f1f1f1; /* Light grey */
+            border: 1px solid #dddddd; /* Subtle border */
             border-radius: 5px;
             padding: 1rem;
             margin-top: 1rem;
-            color: #000000;
+            color: #333333;
         }
         .header {
-            color: #1b5e20; /* Deep Forest Green */
+            color: #4CAF50; /* Green header */
             font-size: 2.5rem;
             font-weight: bold;
             margin-bottom: 1rem;
         }
         .subheader {
-            color: #1a8572; /* Cool Green */
+            color: #777777; /* Subtle grey */
             font-size: 1.2rem;
             margin-bottom: 2rem;
         }
         .chat-input {
-            border: 1px solid #78c79e; /* Soft Mint */
+            border: 1px solid #dddddd; /* Light border */
             border-radius: 5px;
             padding: 0.5rem;
         }
@@ -111,25 +111,22 @@ st.markdown("""
             margin-bottom: 0.5rem;
         }
         .user-message {
-            background-color: #f3f8f2; /* Lighter Mint */
-            border: 1px solid #78c79e; /* Soft Mint */
+            background-color: #ffffff; /* White message */
+            border: 1px solid #dddddd; /* Light border */
         }
         .bot-message {
-            background-color: #f3f8f2; /* Lighter Mint */
-            border: 1px solid #27a697; /* Balanced Teal */
+            background-color: #f9f9f9; /* Light grey */
+            border: 1px solid #dddddd; /* Subtle border */
         }
         .stTextArea textarea {
-            background-color: #f3f8f2; /* Lighter Mint */
+            background-color: #f9f9f9; /* Light grey */
         }
         .sidebar .sidebar-content {
-            background-color: #035c4b; /* Deep Teal */
-        }
-        .sidebar .sidebar-content {
-            color: white; /* Keep text white for contrast */
+            background-color: #ffffff; /* White sidebar */
+            color: #333333; /* Dark text */
         }
     </style>
 """, unsafe_allow_html=True)
-
 
 # Sidebar
 with st.sidebar:
@@ -145,7 +142,7 @@ with st.sidebar:
     )
 
 # Main content
-st.markdown("<h1 class='header'>NutriLens</h1>", unsafe_allow_html=True)
+st.markdown("<h1 class='header'>NutrifyAI</h1>", unsafe_allow_html=True)
 st.markdown("<p class='subheader'>Get instant nutritional insights from your food images!!!</p>", unsafe_allow_html=True)
 
 # File uploader
@@ -217,3 +214,4 @@ if prompt := st.chat_input("Ask about nutrition or the analyzed image"):
             st.markdown(response)
     
     st.session_state.messages.append({"role": "assistant", "content": response})
+
