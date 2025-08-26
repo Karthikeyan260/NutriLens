@@ -54,6 +54,8 @@ st.markdown("""
             border-radius: 10px;
             padding: 2rem;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 100%;
+            overflow-x: auto;
         }
         .stButton > button {
             background-color: #4CAF50;
@@ -79,17 +81,53 @@ st.markdown("""
             padding: 1rem;
             margin-top: 1rem;
             color: #333333;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            line-height: 1.5;
         }
         .header {
             color: #4CAF50;
             font-size: 2.5rem;
             font-weight: bold;
             margin-bottom: 1rem;
+            text-align: center;
+            word-wrap: break-word;
         }
         .subheader {
             color: #777777;
             font-size: 1.2rem;
             margin-bottom: 2rem;
+            text-align: center;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+        
+        /* Responsive design for better text fitting */
+        @media (max-width: 768px) {
+            .header {
+                font-size: 2rem;
+            }
+            .subheader {
+                font-size: 1rem;
+            }
+            .main {
+                padding: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header {
+                font-size: 1.5rem;
+            }
+            .subheader {
+                font-size: 0.9rem;
+            }
+            .main {
+                padding: 1rem;
+            }
+            .response-box, .meal-suggestion-box {
+                padding: 0.75rem;
+            }
         }
     </style>
 """, unsafe_allow_html=True)
@@ -98,7 +136,7 @@ st.markdown("""
 with st.sidebar:
     st.image("karthi.jpeg")
     st.title("More Options")
-    st.markdown("Upload or capture an image of your food to get nutritional insights and meal suggestions!")
+    st.markdown("Upload or capture a food image to get nutritional insights and meal suggestions!")
 
     # Analysis type selection
     analysis_type = st.selectbox(
@@ -109,7 +147,7 @@ with st.sidebar:
 
 # Main content
 st.markdown("<h1 class='header'>NutrifyAI</h1>", unsafe_allow_html=True)
-st.markdown("<p class='subheader'>Get instant nutritional insights from your food images!!!</p>", unsafe_allow_html=True)
+st.markdown("<p class='subheader'>Get instant nutritional insights from your food images!</p>", unsafe_allow_html=True)
 
 # Choose between upload or camera
 upload_method = st.radio("Choose image input method:", ["Upload", "Use Camera"], horizontal=True)
