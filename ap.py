@@ -33,7 +33,7 @@ def input_image_setup(uploaded_file):
 # Function to generate meal suggestions
 def get_meal_suggestions(analysis_results):
     suggestion_prompt = f"Based on this nutritional analysis: {analysis_results}, suggest 3 healthy meal ideas that complement this diet. Format the response as a bulleted list."
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-2.5-flash-lite')
     response = model.generate_content(suggestion_prompt)
     return response.text
 
