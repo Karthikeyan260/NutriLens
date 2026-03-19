@@ -3,6 +3,7 @@ import google.generativeai as genai
 from PIL import Image
 from dotenv import load_dotenv
 import os
+import time
 
 # Load environment variables
 load_dotenv()
@@ -10,10 +11,44 @@ load_dotenv()
 # Configure Google Generative AI with API key
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
+# Retry constants
+_MAX_RETRIES = 3
+_INITIAL_BACKOFF = 15  # seconds to wait on first rate-limit hit
+
+
+def _is_rate_limit_error(exc):
+    """Return True if the exception signals a 429 / quota-exceeded error."""
+    msg = str(exc).lower()
+    return "429" in msg or "quota" in msg or "rate_limit_exceeded" in msg or "resource_exhausted" in msg
+
+
+def _call_with_retry(fn, *args, **kwargs):
+    """
+    Call *fn* with the supplied arguments and retry up to _MAX_RETRIES times
+    when a rate-limit (429) error is received, using exponential back-off.
+    Any other exception is re-raised immediately.
+    """
+    backoff = _INITIAL_BACKOFF
+    for attempt in range(_MAX_RETRIES):
+        try:
+            return fn(*args, **kwargs)
+        except Exception as exc:
+            if _is_rate_limit_error(exc) and attempt < _MAX_RETRIES - 1:
+                st.warning(
+                    f"Rate limit reached. Waiting {backoff}s before retrying "
+                    f"(attempt {attempt + 1}/{_MAX_RETRIES})…"
+                )
+                time.sleep(backoff)
+                backoff *= 2  # exponential back-off
+            else:
+                raise
+
+
 # Function to get the response from the Gemini model
 def get_gemini_response(input, image, prompt):
     model = genai.GenerativeModel('gemini-2.5-flash-lite')
-    response = model.generate_content([input, image[0], prompt])
+    parts = [p for p in [input, image[0] if image else None, prompt] if p]
+    response = _call_with_retry(model.generate_content, parts)
     return response.text
 
 # Function to set up the uploaded image for input
@@ -34,7 +69,7 @@ def input_image_setup(uploaded_file):
 def get_meal_suggestions(analysis_results):
     suggestion_prompt = f"Based on this nutritional analysis: {analysis_results}, suggest 3 healthy meal ideas that complement this diet. Format the response as a bulleted list."
     model = genai.GenerativeModel('gemini-2.5-flash-lite')
-    response = model.generate_content(suggestion_prompt)
+    response = _call_with_retry(model.generate_content, suggestion_prompt)
     return response.text
 
 # Set page config
@@ -146,13 +181,25 @@ if st.button("Analyze Image"):
                 st.markdown("<h3>Analysis Results:</h3>", unsafe_allow_html=True)
                 st.markdown(f"<div class='response-box'>{response}</div>", unsafe_allow_html=True)
 
+                # Small pause between the two API calls to reduce the chance
+                # of hitting per-minute rate limits back-to-back.
+                time.sleep(2)
+
                 with st.spinner("Generating meal suggestions..."):
                     meal_suggestions = get_meal_suggestions(response)
                     st.markdown("<h3>Meal Suggestions:</h3>", unsafe_allow_html=True)
                     st.markdown(f"<div class='meal-suggestion-box'>{meal_suggestions}</div>", unsafe_allow_html=True)
 
             except Exception as e:
-                st.error(f"An error occurred: {str(e)}")
+                if _is_rate_limit_error(e):
+                    st.error(
+                        "⚠️ **API quota exceeded (rate limit 429).** "
+                        "The free-tier per-minute quota for this Google Cloud project has been reached. "
+                        "Please wait a minute and try again, or consider requesting a higher quota at "
+                        "https://cloud.google.com/docs/quotas/help/request_increase"
+                    )
+                else:
+                    st.error(f"An error occurred: {str(e)}")
     else:
         st.warning("Please upload or capture an image first!")
 
@@ -174,11 +221,22 @@ if prompt := st.chat_input("Ask about nutrition or the analyzed image"):
 
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
-            if uploaded_file:
-                image_data = input_image_setup(uploaded_file)
-                response = get_gemini_response(prompt, image_data, "")
-            else:
-                response = get_gemini_response(prompt, [], "")
-            st.markdown(response)
-
-        st.session_state.messages.append({"role": "assistant", "content": response})
+            try:
+                if uploaded_file:
+                    image_data = input_image_setup(uploaded_file)
+                    response = get_gemini_response(prompt, image_data, "")
+                else:
+                    response = get_gemini_response(prompt, [], "")
+                st.markdown(response)
+                st.session_state.messages.append({"role": "assistant", "content": response})
+            except Exception as e:
+                if _is_rate_limit_error(e):
+                    error_msg = (
+                        "⚠️ **API quota exceeded (rate limit 429).** "
+                        "Please wait a minute and try again, or request a higher quota at "
+                        "https://cloud.google.com/docs/quotas/help/request_increase"
+                    )
+                else:
+                    error_msg = f"An error occurred: {str(e)}"
+                st.error(error_msg)
+                st.session_state.messages.append({"role": "assistant", "content": error_msg})
