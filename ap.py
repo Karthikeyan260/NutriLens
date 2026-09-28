@@ -1,5 +1,6 @@
 import streamlit as st
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from PIL import Image
 from dotenv import load_dotenv
 import os
@@ -9,7 +10,7 @@ import time
 load_dotenv()
 
 # Configure Google Generative AI with API key
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
 # Retry constants
 _MAX_RETRIES = 3
@@ -46,21 +47,19 @@ def _call_with_retry(fn, *args, **kwargs):
 
 # Function to get the response from the Gemini model
 def get_gemini_response(input, image, prompt):
-    model = genai.GenerativeModel('gemini-2.5-flash-lite')
     parts = [p for p in [input, image[0] if image else None, prompt] if p]
-    response = _call_with_retry(model.generate_content, parts)
+    response = _call_with_retry(
+        client.models.generate_content,
+        model='gemini-2.5-flash-lite',
+        contents=parts,
+    )
     return response.text
 
 # Function to set up the uploaded image for input
 def input_image_setup(uploaded_file):
     if uploaded_file is not None:
         bytes_data = uploaded_file.getvalue()
-        image_parts = [
-            {
-                "mime_type": uploaded_file.type,
-                "data": bytes_data
-            }
-        ]
+        image_parts = [types.Part.from_bytes(data=bytes_data, mime_type=uploaded_file.type)]
         return image_parts
     else:
         raise FileNotFoundError("No file uploaded!")
@@ -68,8 +67,11 @@ def input_image_setup(uploaded_file):
 # Function to generate meal suggestions
 def get_meal_suggestions(analysis_results):
     suggestion_prompt = f"Based on this nutritional analysis: {analysis_results}, suggest 3 healthy meal ideas that complement this diet. Format the response as a bulleted list."
-    model = genai.GenerativeModel('gemini-2.5-flash-lite')
-    response = _call_with_retry(model.generate_content, suggestion_prompt)
+    response = _call_with_retry(
+        client.models.generate_content,
+        model='gemini-2.5-flash-lite',
+        contents=suggestion_prompt,
+    )
     return response.text
 
 # Set page config
